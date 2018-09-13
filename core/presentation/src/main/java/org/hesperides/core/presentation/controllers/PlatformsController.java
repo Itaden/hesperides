@@ -16,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -111,6 +112,22 @@ public class PlatformsController extends AbstractController {
 
         return ResponseEntity.ok(applicationOutput);
     }
+
+    @GetMapping("/{application_name}/platforms/{platform_name}/properties/instance_model")
+    @ApiOperation("Get properties with the given path in a platform")
+    public ResponseEntity<InstanceModelOutput> getInstanceModel(@PathVariable("application_name") final String applicationName,
+                                                              @PathVariable(value = "platform_name") final String platform_name,
+                                                            @RequestParam(value = "path") final String path) {
+
+        Platform.Key platformKey = new Platform.Key(applicationName, platform_name);
+        Optional<InstanceView> instanceModelView = platformUseCases.getInstanceModel(platformKey, path);
+        Optional<InstanceModelOutput> instanceModelOutput = instanceModelView.map(InstanceModelOutput::fromInstanceView);
+        InstanceModelOutput instanceModelOutputReponse = instanceModelOutput.map(instanceModelOutput1 -> instanceModelOutput.get()).orElse(new InstanceModelOutput(new ArrayList<>()));
+
+        return ResponseEntity.ok(instanceModelOutputReponse);
+    }
+
+
 
     @ApiOperation("Retrieve platforms using module")
     @GetMapping("/using_module/{module_name}/{module_version}/{version_type}")
